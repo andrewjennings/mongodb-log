@@ -29,7 +29,7 @@ class TestConfig(unittest.TestCase):
 
         r = self.conn[self.db_name][self.collection_name]
     
-        message = r.find_one({'level':'debug', 'msg':'test'})
+        message = r.find_one({'levelname':'DEBUG', 'msg':'test'})
         self.assertEquals(message['msg'], 'test')
 
 class TestDictConfig(unittest.TestCase):
@@ -64,12 +64,12 @@ class TestDictConfig(unittest.TestCase):
 
         r = self.conn[self.db_name][self.collection_name]
 
-        message = r.find_one({'level':'debug', 'msg':'dict_example'})
+        message = r.find_one({'levelname':'DEBUG', 'msg':'dict_example'})
         self.assertEquals(message, None,
             "Logger put debug message in when info level handler requested")
 
         log.info('dict_example')
-        message = r.find_one({'level':'info', 'msg':'dict_example'})
+        message = r.find_one({'levelname':'INFO', 'msg':'dict_example'})
         self.assertNotEquals(message, None,
             "Logger didn't insert message into database")
         self.assertEquals(message['msg'], 'dict_example',
