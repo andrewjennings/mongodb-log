@@ -8,19 +8,33 @@ from bson import InvalidDocument
 
 class MongoFormatter(logging.Formatter):
     def format(self, record):
-        """Format exception object as a string"""
+        """Format the LogRecord as a dictionary so it's suitable for
+        insertion into a Mongo record.
+        If the msg given in the LogRecord is a dict, it will remain
+        unformatted so that it's queryable in Mongo.  If the msg
+        is a string, it'll be formatted into "message" and put
+        into Mongo as a string attribute called message."""
         data = record.__dict__.copy()
 
-        if record.args:
-            record.msg = record.msg % record.args
+        if type(record.msg) is dict:
+            data['message'] = record.msg
+        else:
+            try: 
+                data['message'] = record.msg % record.args
+            except:
+                data['message'] = '' 
+                pass
+            # If the formatter is given a string, format our
+            # 'message' using it.
+            data['message'] = self._fmt % data
 
         data.update(
             username=getpass.getuser(),
             time=datetime.now(),
             host=gethostname(),
-            message=record.msg,
-            args=tuple(unicode(arg) for arg in record.args)
         )
+
+
         if 'exc_info' in data and data['exc_info']:
             data['exc_info'] = self.formatException(data['exc_info'])
         return data

@@ -3,7 +3,7 @@ import logging
 
 from pymongo.connection import Connection
 
-from mongolog.handlers import MongoHandler
+from mongolog.handlers import MongoHandler, MongoFormatter
 
 
 class TestRootLoggerHandler(unittest.TestCase):
@@ -64,3 +64,17 @@ class TestRootLoggerHandler(unittest.TestCase):
         cursor = self.collection.find({'levelname':'INFO', 'msg.state': 'PA'})
 
         self.assertEquals(cursor.count(), 3, "Didn't find all three documents")
+
+    def testFormatter(self):
+        formatString = '%(message)s from %(levelname)s'
+        self.handler.setFormatter(MongoFormatter(formatString))
+
+        self.log.info('%s within a message', 'message')
+        document = self.collection.find_one()
+        self.assertEquals(document['message'], 'message within a message from'
+                                            ' INFO')
+        
+
+    def testNoneArgs(self):
+        """ Logging example with "None" as logging args """
+        self.log.info('This is a string %s with no args', None)
